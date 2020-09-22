@@ -26,6 +26,8 @@ login_button.click()
 
 # --------------------------------------------------------------- #
 
+k = 2
+
 DATABASE = "tradingbot"
 
 asset = None
@@ -73,7 +75,7 @@ while True:
                 .replace("円", "").replace(",", "").replace("合計", "")
             trading_asset = int(trading_asset)
 
-            insert_asset = asset - trading_asset
+            insert_asset = (asset - trading_asset) * k
             insert_asset = insert_asset - sum(insert_assets)
 
             if insert_asset > 0:
