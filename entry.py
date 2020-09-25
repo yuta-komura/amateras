@@ -41,7 +41,6 @@ bitflyer = bitflyer.API(api_key=Bitflyer.Api.value.KEY.value,
 
 DATABASE = "tradingbot"
 
-is_first_entry = True
 has_buy_side = False
 while True:
     historical_price = get_historical_price()
@@ -85,19 +84,13 @@ while True:
         message.info("invalid trading")
         continue
 
-    order_buy = break_high_line and (not has_buy_side or is_first_entry)
-    order_sell = break_low_line and (has_buy_side or is_first_entry)
+    order_buy = break_high_line and not has_buy_side
+    order_sell = break_low_line and has_buy_side
 
     if order_buy:
-        if is_first_entry:
-            is_first_entry = False
-        else:
-            save_entry(side="BUY", price=high_line)
+        save_entry(side="BUY", price=high_line)
         has_buy_side = True
 
     if order_sell:
-        if is_first_entry:
-            is_first_entry = False
-        else:
-            save_entry(side="SELL", price=low_line)
+        save_entry(side="SELL", price=low_line)
         has_buy_side = False

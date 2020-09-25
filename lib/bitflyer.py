@@ -57,7 +57,7 @@ class API:
                 self.__send_order(side=side,
                                   size=size,
                                   price=price)
-                time.sleep(3)
+                time.sleep(1)
             except Exception:
                 message.error(traceback.format_exc())
                 time.sleep(3)
@@ -86,7 +86,7 @@ class API:
                 assert self.is_valid_price(price=price)
 
                 self.__send_order(side=side, size=size, price=price)
-                time.sleep(3)
+                time.sleep(1)
             except Exception:
                 message.error(traceback.format_exc())
                 time.sleep(3)
@@ -195,8 +195,8 @@ class API:
             try:
                 collateral = self.api.getcollateral()
 
-                asset = collateral["collateral"]
-                valid_size = (asset * self.LEVERAGE) / price
+                collateral = collateral["collateral"]
+                valid_size = (collateral * self.LEVERAGE) / price
                 size = (valid_size - position_size) - 0.01
                 return size
             except Exception:

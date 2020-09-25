@@ -112,9 +112,7 @@ class bFwebsocket(object):
                 best_bid = recept_data["best_bid"]
                 best_ask = recept_data["best_ask"]
 
-                sql = "delete from ticker"
-                repository.execute(database=database, sql=sql, log=False)
-                sql = "insert into ticker values ('{date}',{best_bid},{best_ask})"\
+                sql = "update ticker set date='{date}',best_bid={best_bid},best_ask={best_ask}"\
                     .format(date=date, best_bid=best_bid, best_ask=best_ask)
                 repository.execute(database=database, sql=sql, log=False)
 
