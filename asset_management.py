@@ -181,7 +181,6 @@ while True:
 
         insert_collateral = -profit * k - sum(inserted_collaterals)
 
-        insert_collateral = 1
         try:
             if insert_collateral > 0:
                 driver.get("https://lightning.bitflyer.com/funds")
