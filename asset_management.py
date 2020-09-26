@@ -1,11 +1,12 @@
 import datetime
 import time
 import traceback
+import warnings
 
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 
-from lib import message, repository, bitflyer
+from lib import bitflyer, message, repository
 from lib.config import AssetManagement, Bitflyer, FilePath
 
 
@@ -97,6 +98,8 @@ def liquidate():
             message.error(traceback.format_exc())
     message.info("liquidate finish")
 
+
+warnings.filterwarnings('ignore')
 
 options = Options()
 path_to_chromedriver = FilePath.CHROMEDRIVER.value
