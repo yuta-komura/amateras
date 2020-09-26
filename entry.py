@@ -12,11 +12,6 @@ def get_historical_price() -> pd.DataFrame or None:
     try:
         limit = CHANNEL_BAR_NUM + 1
         historical_price = bitflyer.get_historical_price(limit=limit)
-        first_Time = int(historical_price.loc[0]["Time"])
-        first_date = datetime.datetime.fromtimestamp(first_Time)
-        sql = "delete from execution_history where date < '{first_date}'"\
-            .format(first_date=first_date)
-        repository.execute(database=DATABASE, sql=sql, write=False)
         return historical_price
     except Exception:
         message.error(traceback.format_exc())

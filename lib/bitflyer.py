@@ -1,3 +1,4 @@
+import datetime
 import time
 import traceback
 from enum import Enum
@@ -351,7 +352,14 @@ class API:
                 order by
                     Time
             """.format(limit=limit)
-        return repository.read_sql(database=self.DATABASE, sql=sql)
+
+        historical_price = repository.read_sql(database=self.DATABASE, sql=sql)
+        first_Time = int(historical_price.loc[0]["Time"])
+        first_date = datetime.datetime.fromtimestamp(first_Time)
+        sql = "delete from execution_history where date < '{first_date}'"\
+            .format(first_date=first_date)
+        repository.execute(database=self.DATABASE, sql=sql, write=False)
+        return historical_price
 
     def __ticker(self):
         while True:
@@ -364,3 +372,11 @@ class API:
                     return {"best_ask": best_ask, "best_bid": best_bid}
             except Exception:
                 message.error(traceback.format_exc())
+
+    def get_profit(self) -> int:
+        while True:
+            try:
+                return int(self.api.getcollateral()["open_position_pnl"])
+            except Exception:
+                message.error(traceback.format_exc())
+                time.sleep(3)
