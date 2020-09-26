@@ -5,7 +5,7 @@ from lib import math, repository
 asset = 300000
 
 # k = 0.01 許容値
-k = 0.01
+k = 0.06
 # --------------------------------------- #
 
 fee = k / 100
@@ -38,7 +38,8 @@ for i in range(len(backtest_entry)):
             now_position["side"] == "SELL" or now_position["side"] == "CLOSE"):
 
         amount = asset / past_position["price"]
-        profit = ((amount * now_position["price"]) - asset) - (asset * fee)
+        profit = ((amount * now_position["price"]) - asset)
+        profit -= (asset * fee)
 
         if profit <= 0:
             downs.append(profit)
@@ -53,7 +54,8 @@ for i in range(len(backtest_entry)):
             now_position["side"] == "BUY" or now_position["side"] == "CLOSE"):
 
         amount = asset / past_position["price"]
-        profit = (asset - (amount * now_position["price"])) - (asset * fee)
+        profit = (asset - (amount * now_position["price"]))
+        profit -= (asset * fee)
 
         if profit <= 0:
             downs.append(profit)

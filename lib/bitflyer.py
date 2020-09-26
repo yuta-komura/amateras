@@ -40,13 +40,19 @@ class API:
                 has_completed_order = size < 0.01 \
                     or self.__has_changed_side(side=side)
                 if has_completed_order:
-                    sql = "delete from position"
-                    repository.execute(
-                        database=self.DATABASE, sql=sql, write=False)
-                    sql = "insert into position values ('{side}')"\
-                        .format(side=side)
-                    repository.execute(
-                        database=self.DATABASE, sql=sql, write=False)
+                    sql = "select * from position"
+                    position = repository.read_sql(
+                        database=self.DATABASE, sql=sql)
+                    if position.empty:
+                        sql = "insert into position values('{side}')"\
+                            .format(side=side)
+                        repository.execute(
+                            database=self.DATABASE, sql=sql, write=False)
+                    else:
+                        sql = "update position set side='{side}'"\
+                            .format(side=side)
+                        repository.execute(
+                            database=self.DATABASE, sql=sql, write=False)
                     message.info(side, "order complete")
                     return
 
@@ -74,6 +80,9 @@ class API:
                 has_completed_close = \
                     position["side"] is None or position["size"] < 0.01
                 if has_completed_close:
+                    sql = "delete from position"
+                    repository.execute(
+                        database=self.DATABASE, sql=sql, write=False)
                     message.info("close complete")
                     return
 

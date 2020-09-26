@@ -5,7 +5,7 @@ import traceback
 import pandas as pd
 
 from lib import bitflyer, message, repository
-from lib.config import Bitflyer, Virtual
+from lib.config import AssetManagement, Bitflyer, Virtual
 
 
 def get_historical_price() -> pd.DataFrame or None:
@@ -36,10 +36,16 @@ TIME_FRAME = Virtual.Trade.value.TIME_FRAME.value
 CHANNEL_WIDTH = Virtual.Trade.value.CHANNEL_WIDTH.value
 CHANNEL_BAR_NUM = TIME_FRAME * CHANNEL_WIDTH
 
+EXECUTE_TIME = AssetManagement.EXECUTE_TIME.value
+
 bitflyer = bitflyer.API(api_key=Bitflyer.Api.value.KEY.value,
                         api_secret=Bitflyer.Api.value.SECRET.value)
 
 DATABASE = "tradingbot"
+
+sql = "select * from asset_management"
+asset_management = repository.read_sql(database=DATABASE, sql=sql)
+plan_date = asset_management.at[0, "plan_date"]
 
 has_buy_side = False
 while True:
@@ -58,6 +64,22 @@ while True:
     latest_High = latest["High"]
     latest_Low = latest["Low"]
     latest_Close = latest["Close"]
+
+    now = datetime.datetime.now()
+    if now.day == plan_date.day and now.hour >= EXECUTE_TIME:
+        message.info("enty pause")
+        save_entry(side="CLOSE", price=latest_Close)
+        tomorrow = now + datetime.timedelta(days=1)
+        while True:
+            sql = "select * from asset_management"
+            asset_management = repository.read_sql(database=DATABASE, sql=sql)
+            plan_date = asset_management.at[0, "plan_date"]
+            if plan_date.day == tomorrow.day:
+                break
+            else:
+                time.sleep(1)
+        message.info("enty start")
+        continue
 
     break_high_line = high_line < latest_High
     break_low_line = low_line > latest_Low

@@ -53,10 +53,10 @@ now = datetime.datetime.now()
 after = int(
     datetime.datetime(
         2020,
-        now.month,
-        now.day,
-        0,
-        0,
+        9,
+        26,
+        4,
+        36,
         00,
         0000).timestamp())
 
