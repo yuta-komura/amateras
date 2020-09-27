@@ -86,6 +86,7 @@ def close():
 
 def liquidate():
     message.info("liquidate start")
+
     while True:
         try:
             close()
@@ -156,10 +157,11 @@ def liquidate():
             sql = "update asset_management set plan_date='{plan_date}'"\
                 .format(plan_date=plan_date)
             repository.execute(database=DATABASE, sql=sql)
+
+            message.info("liquidate finish")
             return
         except Exception:
             message.error(traceback.format_exc())
-    message.info("liquidate finish")
 
 
 warnings.filterwarnings('ignore')
