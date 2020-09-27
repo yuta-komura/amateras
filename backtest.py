@@ -52,9 +52,9 @@ DATABASE = "tradingbot"
 now = datetime.datetime.now()
 after = int(
     datetime.datetime(
-        now.year,
-        now.month,
-        now.day,
+        2000,
+        4,
+        1,
         0,
         0,
         00,

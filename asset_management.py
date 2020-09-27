@@ -183,7 +183,7 @@ login_button.click()
 
 # --------------------------------------------------------------- #
 
-k = 20
+k = 1
 
 EXECUTE_TIME = AssetManagement.EXECUTE_TIME.value
 

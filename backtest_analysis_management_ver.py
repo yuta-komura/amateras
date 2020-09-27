@@ -4,7 +4,7 @@ from lib import math, repository
 
 asset = 167000
 lev = 4
-k = 20
+k = 1
 
 print(k)
 
@@ -19,14 +19,11 @@ sql = """
         from
             backtest_entry
         where
-            date >= '2020-09-28 01:00:00'
+            date >= '2020-07-01 00:00:00'
         order by
             date
         """
 backtest_entry = repository.read_sql(database="tradingbot", sql=sql)
-
-start_time = backtest_entry.loc[0]["date"]
-finish_time = backtest_entry.loc[len(backtest_entry) - 1]["date"]
 
 profit_flow = []
 profit_flow.append(asset)
@@ -40,8 +37,14 @@ loses = []
 wins = []
 now_date = None
 init_asset = None
+has_breaked = False
+start_time = None
+finish_time = None
 for i in range(len(backtest_entry)):
+    now_position = backtest_entry.iloc[i]
+
     if i == 0:
+        start_time = now_position["date"]
         continue
 
     past_position = backtest_entry.iloc[i - 1]
@@ -55,8 +58,8 @@ for i in range(len(backtest_entry)):
         daily_profit = sum(daily_wins) + sum(daily_loses)
         asset = init_asset + daily_profit
 
-        surplus = asset * (2 / 3)
-        asset = asset * (1 / 3)
+        surplus = asset * (9 / 10)
+        asset = asset * (1 / 10)
         asset = asset * lev - ((asset * lev) * (1 / 10))
 
         now_date = past_position["date"]
@@ -65,8 +68,6 @@ for i in range(len(backtest_entry)):
 
         daily_wins = []
         daily_loses = []
-
-    now_position = backtest_entry.iloc[i]
 
     if past_position["side"] == "BUY" and (
             now_position["side"] == "SELL" or now_position["side"] == "CLOSE"):
@@ -86,6 +87,10 @@ for i in range(len(backtest_entry)):
             asset -= -profit
             if surplus > 0:
                 asset += -profit * k
+            else:
+                finish_time = now_position["date"]
+                has_breaked = True
+                break
 
         if profit > 0:
             downs_list.append(sum(downs))
@@ -115,6 +120,10 @@ for i in range(len(backtest_entry)):
             asset -= -profit
             if surplus > 0:
                 asset += -profit * k
+            else:
+                finish_time = now_position["date"]
+                has_breaked = True
+                break
 
         if profit > 0:
             downs_list.append(sum(downs))
@@ -125,6 +134,10 @@ for i in range(len(backtest_entry)):
             profit_flow.append(prf)
 
             asset += profit
+
+if not has_breaked:
+    start_time = backtest_entry.loc[0]["date"]
+    finish_time = backtest_entry.loc[len(backtest_entry) - 1]["date"]
 
 pf = None
 if sum(loses) != 0:
