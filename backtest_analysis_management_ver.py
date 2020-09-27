@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 
 from lib import math, repository
 
-asset = 150000
+asset = 167000
 lev = 4
 k = 20
 
@@ -18,8 +18,8 @@ sql = """
             *
         from
             backtest_entry
-        # where
-            # date >= '2020-08-01 00:00:00'
+        where
+            date >= '2020-09-28 01:00:00'
         order by
             date
         """
@@ -63,8 +63,6 @@ for i in range(len(backtest_entry)):
         init_asset = \
             (asset * 10) / (9 * lev) + surplus
 
-        wins += daily_wins
-        loses += daily_loses
         daily_wins = []
         daily_loses = []
 
@@ -79,6 +77,7 @@ for i in range(len(backtest_entry)):
         if profit < 0:
             downs.append(profit)
             daily_loses.append(profit)
+            loses.append(profit)
             prf += profit
             profit_flow.append(prf)
 
@@ -92,6 +91,7 @@ for i in range(len(backtest_entry)):
             downs_list.append(sum(downs))
             downs = []
             daily_wins.append(profit)
+            wins.append(profit)
             prf += profit
             profit_flow.append(prf)
 
@@ -106,6 +106,7 @@ for i in range(len(backtest_entry)):
         if profit < 0:
             downs.append(profit)
             daily_loses.append(profit)
+            loses.append(profit)
             prf += profit
             profit_flow.append(prf)
 
@@ -119,6 +120,7 @@ for i in range(len(backtest_entry)):
             downs_list.append(sum(downs))
             downs = []
             daily_wins.append(profit)
+            wins.append(profit)
             prf += profit
             profit_flow.append(prf)
 
