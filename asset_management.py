@@ -201,75 +201,74 @@ plan_date = asset_management.at[0, "plan_date"]
 latest_side = None
 inserted_collaterals = []
 while True:
-    while True:
-        now = datetime.datetime.now()
-        if now.day == plan_date.day and now.hour >= EXECUTE_TIME:
-            while True:
-                try:
-                    sql = "select * from position"
-                    position = repository.read_sql(database=DATABASE, sql=sql)
-                    if position.empty:
-                        liquidate()
-                        plan_date += datetime.timedelta(days=1)
-                        break
-                except Exception:
-                    message.error(traceback.format_exc())
+    now = datetime.datetime.now()
+    if now.day == plan_date.day and now.hour >= EXECUTE_TIME:
+        while True:
+            try:
+                sql = "select * from position"
+                position = repository.read_sql(database=DATABASE, sql=sql)
+                if position.empty:
+                    liquidate()
+                    plan_date += datetime.timedelta(days=1)
+                    break
+            except Exception:
+                message.error(traceback.format_exc())
 
-        try:
-            sql = "select * from entry"
-            entry = repository.read_sql(database=DATABASE, sql=sql)
-            if entry.empty:
-                break
-
-            entry_side = entry.at[0, "side"]
-
-            sql = "select * from position"
-            position = repository.read_sql(database=DATABASE, sql=sql)
-            if position.empty:
-                break
-
-            position_side = position.at[0, "side"]
-        except Exception:
-            message.error(traceback.format_exc())
+    try:
+        sql = "select * from entry"
+        entry = repository.read_sql(database=DATABASE, sql=sql)
+        if entry.empty:
             continue
 
-        if entry_side != position_side:
-            break
+        entry_side = entry.at[0, "side"]
 
-        if latest_side is None \
-                or latest_side != position_side:
-            inserted_collaterals = []
-            latest_side = position_side
-
-        profit = bitflyer.get_profit()
-        time.sleep(3)
-
-        insert_collateral = -profit * k - sum(inserted_collaterals)
-
-        try:
-            if insert_collateral > 0:
-                driver.get("https://lightning.bitflyer.com/funds")
-
-                class_name = "collateral__form"
-                elements = driver.find_elements_by_class_name(class_name)
-
-                deposit_element = None
-                for e in elements:
-                    if "証拠金口座へ" in e.text:
-                        deposit_element = e
-                        break
-
-                ai_input = \
-                    deposit_element.find_element_by_tag_name("input")
-                ai_input.clear()
-                ai_input.send_keys(insert_collateral)
-
-                ai_button = \
-                    deposit_element.find_element_by_tag_name("button")
-                ai_button.click()
-
-                inserted_collaterals.append(insert_collateral)
-                message.info("insert collateral", insert_collateral)
-        except Exception:
-            message.error(traceback.format_exc())
+        sql = "select * from position"
+        position = repository.read_sql(database=DATABASE, sql=sql)
+        if position.empty:
             continue
+
+        position_side = position.at[0, "side"]
+    except Exception:
+        message.error(traceback.format_exc())
+        continue
+
+    if entry_side != position_side:
+        continue
+
+    if latest_side is None \
+            or latest_side != position_side:
+        inserted_collaterals = []
+        latest_side = position_side
+
+    profit = bitflyer.get_profit()
+    time.sleep(3)
+
+    insert_collateral = -profit * k - sum(inserted_collaterals)
+
+    try:
+        if insert_collateral > 0:
+            driver.get("https://lightning.bitflyer.com/funds")
+
+            class_name = "collateral__form"
+            elements = driver.find_elements_by_class_name(class_name)
+
+            deposit_element = None
+            for e in elements:
+                if "証拠金口座へ" in e.text:
+                    deposit_element = e
+                    break
+
+            ai_input = \
+                deposit_element.find_element_by_tag_name("input")
+            ai_input.clear()
+            ai_input.send_keys(insert_collateral)
+
+            ai_button = \
+                deposit_element.find_element_by_tag_name("button")
+            ai_button.click()
+
+            inserted_collaterals.append(insert_collateral)
+            message.info("insert collateral", insert_collateral)
+    except Exception:
+        message.error(traceback.format_exc())
+        continue
