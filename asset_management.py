@@ -10,90 +10,153 @@ from lib import bitflyer, message, repository
 from lib.config import AssetManagement, Bitflyer, FilePath
 
 
-def liquidate():
-    message.info("liquidate start")
+def close():
     while True:
         try:
             driver.get("https://lightning.bitflyer.com/trade/fxbtcjpy")
 
-            class_name = "pnl__period.pnl__period--daily"
+            class_name = "pnl__funds.pnl__funds--derivative._is-active._has-position"
             elements = driver.find_elements_by_class_name(class_name)
-
-            daily_profit = None
+            size = None
             for e in elements:
-                if "日次損益" in e.text:
-                    daily_profit = e.text
-                    daily_profit = daily_profit.replace("日次損益", "")
-                    daily_profit = daily_profit.replace("\n", "")
-                    daily_profit = daily_profit.replace("円", "")
-                    daily_profit = daily_profit.replace(",", "")
-                    daily_profit = int(daily_profit)
+                if "FX BTC/JPY" in e.text:
+                    size = e.text
+                    size = size.replace("FX BTC/JPY", "")
+                    size = size.replace("ɃFX", "")
+                    size = size.replace("\n", "")
+                    size = float(size)
                     break
 
-            sql = "select * from asset_management"
-            asset_management = repository.read_sql(database=DATABASE, sql=sql)
-            basis_collateral = int(asset_management.at[0, "basis_collateral"])
-            basis_collateral += daily_profit
+            if size is not None:
+                if abs(size) < 0.01:
+                    class_name = "button-group-item"
+                    elements = driver.find_elements_by_class_name(class_name)
+                    market_element = None
+                    for e in elements:
+                        if "成行" in e.text:
+                            market_element = e
+                            break
+                    market_element.click()
+
+                    class_name = "place__size"
+                    oe_input = driver.find_element_by_class_name(class_name)
+                    oe_input.clear()
+                    oe_input.send_keys(str(0.01))
+                    class_name = "button-group-item.noSelect"
+                    oe_b = driver.find_elements_by_class_name(class_name)
+                    for b in oe_b:
+                        if size > 0:
+                            if "買い" in b.text:
+                                b.click()
+                                break
+                        if size < 0:
+                            if "売り" in b.text:
+                                b.click()
+                                break
+                    continue
+                elif abs(size) >= 0.01:
+                    class_name = "button-group-item"
+                    elements = driver.find_elements_by_class_name(class_name)
+                    market_element = None
+                    for e in elements:
+                        if "成行" in e.text:
+                            market_element = e
+                            break
+                    market_element.click()
+
+                    class_name = "place__size"
+                    oe_input = driver.find_element_by_class_name(class_name)
+                    oe_input.clear()
+                    oe_input.send_keys(str(abs(size)))
+                    class_name = "button-group-item.noSelect"
+                    oe_b = driver.find_elements_by_class_name(class_name)
+                    for b in oe_b:
+                        if size < 0:
+                            if "買い" in b.text:
+                                b.click()
+                                break
+                        if size > 0:
+                            if "売り" in b.text:
+                                b.click()
+                                break
+            return
+        except Exception:
+            message.error(traceback.format_exc())
+
+
+def liquidate():
+    message.info("liquidate start")
+    while True:
+        try:
+            close()
+
+            driver.get("https://lightning.bitflyer.com/funds")
+
+            class_name = "fund__collateral"
+            elements = driver.find_elements_by_class_name(class_name)
+            collateral = None
+            for e in elements:
+                collateral = e.text
+                collateral = collateral.replace(",", "")
+                collateral = collateral.replace("\n", "")
+                collateral = collateral.replace("円", "")
+                collateral = int(collateral)
+                break
+
+            class_name = "collateral__form"
+            elements = driver.find_elements_by_class_name(class_name)
+            withdraw_element = None
+            for e in elements:
+                if "現物口座へ" in e.text:
+                    withdraw_element = e
+
+            w_input = \
+                withdraw_element.find_element_by_tag_name("input")
+            w_input.clear()
+            w_input.send_keys(collateral)
+
+            w_button = \
+                withdraw_element.find_element_by_tag_name("button")
+            w_button.click()
 
             driver.get("https://lightning.bitflyer.com/funds")
 
             class_name = "collateral__form"
             elements = driver.find_elements_by_class_name(class_name)
-            withdraw_element = None
             deposit_element = None
             for e in elements:
                 if "証拠金口座へ" in e.text:
                     deposit_element = e
-                if "現物口座へ" in e.text:
-                    withdraw_element = e
 
-            class_name = "balance__currency--sub"
-            elements = driver.find_elements_by_class_name(class_name)
-            collateral_element = None
-            for e in elements:
-                if "JPY Japanese Yen" in e.text:
-                    collateral_element = e
-                    break
-
+            class_name = "balance__currency--jpy"
+            asset_element = driver.find_element_by_class_name(class_name)
             class_name = "currency__total"
-            collateral_element = \
-                collateral_element.find_element_by_class_name(class_name)
+            asset_element = \
+                asset_element.find_element_by_class_name(class_name)
+            asset = asset_element.text
+            asset = asset.replace("合計", "")
+            asset = asset.replace("\n", "")
+            asset = asset.replace("円", "")
+            asset = asset.replace(",", "")
+            asset = int(asset)
 
-            collateral = collateral_element.text
-            collateral = collateral.replace("合計", "")
-            collateral = collateral.replace("\n", "")
-            collateral = collateral.replace("円", "")
-            collateral = collateral.replace(",", "")
-            collateral = int(collateral)
+            insert_collateral = int(asset * (1 / 3))
 
-            amount = collateral - basis_collateral
+            d_input = \
+                deposit_element.find_element_by_tag_name("input")
+            d_input.clear()
+            d_input.send_keys(insert_collateral)
 
-            if amount > 0:
-                w_input = \
-                    withdraw_element.find_element_by_tag_name("input")
-                w_input.clear()
-                w_input.send_keys(amount)
-
-                w_button = \
-                    withdraw_element.find_element_by_tag_name("button")
-                w_button.click()
-            else:
-                d_input = \
-                    deposit_element.find_element_by_tag_name("input")
-                d_input.clear()
-                d_input.send_keys(-amount)
-
-                d_button = \
-                    deposit_element.find_element_by_tag_name("button")
-                d_button.click()
+            d_button = \
+                deposit_element.find_element_by_tag_name("button")
+            d_button.click()
 
             ld = datetime.datetime.now() + datetime.timedelta(days=1)
             plan_date = str(ld).split(".")[0]
-
-            sql = "update asset_management set plan_date='{plan_date}', basis_collateral={basis_collateral}"\
-                .format(plan_date=plan_date, basis_collateral=basis_collateral)
+            sql = "update asset_management set plan_date='{plan_date}'"\
+                .format(plan_date=plan_date)
             repository.execute(database=DATABASE, sql=sql)
-            break
+            return
         except Exception:
             message.error(traceback.format_exc())
     message.info("liquidate finish")
@@ -120,7 +183,7 @@ login_button.click()
 
 # --------------------------------------------------------------- #
 
-k = 2
+k = 20
 
 EXECUTE_TIME = AssetManagement.EXECUTE_TIME.value
 

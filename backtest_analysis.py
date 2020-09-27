@@ -2,10 +2,10 @@ import matplotlib.pyplot as plt
 
 from lib import math, repository
 
-asset = 300000
+asset = 150000
 
 # k = 0.01 許容値
-k = 0.06
+k = 0
 # --------------------------------------- #
 
 fee = k / 100
@@ -16,6 +16,8 @@ sql = """
             *
         from
             backtest_entry
+        where
+            date >= '2020-08-01 00:00:00'
         order by
             date
         """

@@ -53,10 +53,10 @@ now = datetime.datetime.now()
 after = int(
     datetime.datetime(
         2020,
-        9,
-        26,
-        4,
-        36,
+        6,
+        1,
+        0,
+        0,
         00,
         0000).timestamp())
 
