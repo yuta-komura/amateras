@@ -27,7 +27,9 @@ def close():
                     size = float(size)
                     break
 
-            if size is not None:
+            if size is None:
+                break
+            else:
                 if abs(size) < 0.01:
                     class_name = "button-group-item"
                     elements = driver.find_elements_by_class_name(class_name)
@@ -53,33 +55,12 @@ def close():
                             if "売り" in b.text:
                                 b.click()
                                 break
+                    time.sleep(3)
                     continue
-                elif abs(size) >= 0.01:
-                    class_name = "button-group-item"
-                    elements = driver.find_elements_by_class_name(class_name)
-                    market_element = None
-                    for e in elements:
-                        if "成行" in e.text:
-                            market_element = e
-                            break
-                    market_element.click()
-
-                    class_name = "place__size"
-                    oe_input = driver.find_element_by_class_name(class_name)
-                    oe_input.clear()
-                    oe_input.send_keys(str(abs(size)))
-                    class_name = "button-group-item.noSelect"
-                    oe_b = driver.find_elements_by_class_name(class_name)
-                    for b in oe_b:
-                        if size < 0:
-                            if "買い" in b.text:
-                                b.click()
-                                break
-                        if size > 0:
-                            if "売り" in b.text:
-                                b.click()
-                                break
-            return
+                else:
+                    bitflyer.close()
+                    time.sleep(3)
+                    continue
         except Exception:
             message.error(traceback.format_exc())
 
