@@ -10,6 +10,54 @@ from lib import bitflyer, message, repository
 from lib.config import AssetManagement, Bitflyer, FilePath
 
 
+def close_by_disp():
+    while True:
+        try:
+            driver.get("https://lightning.bitflyer.com/trade/fxbtcjpy")
+
+            class_name = "pnl__funds.pnl__funds--derivative._is-active._has-position"
+            elements = driver.find_elements_by_class_name(class_name)
+            size = None
+            for e in elements:
+                if "FX BTC/JPY" in e.text:
+                    size = e.text
+                    size = size.replace("FX BTC/JPY", "")
+                    size = size.replace("ɃFX", "")
+                    size = size.replace("\n", "")
+                    size = float(size)
+                    break
+
+            if size is None:
+                return
+            else:
+                class_name = "button-group-item"
+                elements = driver.find_elements_by_class_name(class_name)
+                market_element = None
+                for e in elements:
+                    if "成行" in e.text:
+                        market_element = e
+                        break
+                market_element.click()
+
+                class_name = "place__size"
+                oe_input = driver.find_element_by_class_name(class_name)
+                oe_input.clear()
+                oe_input.send_keys(str(abs(size)))
+                class_name = "button-group-item.noSelect"
+                oe_b = driver.find_elements_by_class_name(class_name)
+                for b in oe_b:
+                    if size < 0:
+                        if "買い" in b.text:
+                            b.click()
+                            break
+                    if size > 0:
+                        if "売り" in b.text:
+                            b.click()
+                            break
+        except Exception:
+            message.error(traceback.format_exc())
+
+
 def close():
     while True:
         try:
@@ -28,7 +76,7 @@ def close():
                     break
 
             if size is None:
-                break
+                return
             else:
                 if abs(size) < 0.01:
                     class_name = "button-group-item"
@@ -56,10 +104,13 @@ def close():
                                 b.click()
                                 break
                     time.sleep(3)
+
+                    close_by_disp()
+                    time.sleep(5)
                     continue
                 else:
                     bitflyer.close()
-                    time.sleep(3)
+                    time.sleep(5)
                     continue
         except Exception:
             message.error(traceback.format_exc())
