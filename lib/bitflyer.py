@@ -61,9 +61,7 @@ class API:
                 assert self.is_valid_size(size=size)
                 assert self.is_valid_price(price=price)
 
-                self.__send_order(side=side,
-                                  size=size,
-                                  price=price)
+                self.__send_order(side=side, size=size, price=price)
                 time.sleep(1)
             except Exception:
                 message.error(traceback.format_exc())
