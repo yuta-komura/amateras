@@ -42,7 +42,8 @@ sql = "select * from asset_management"
 asset_management = repository.read_sql(database=DATABASE, sql=sql)
 plan_date = asset_management.at[0, "plan_date"]
 
-has_buy_side = False
+is_buy_side = False
+is_sell_side = False
 while True:
     historical_price = get_historical_price()
     if historical_price is None:
@@ -73,6 +74,8 @@ while True:
                 break
             else:
                 time.sleep(1)
+        is_buy_side = False
+        is_sell_side = False
         message.info("enty start")
         continue
 
@@ -101,13 +104,15 @@ while True:
         message.info("invalid trading")
         continue
 
-    order_buy = break_high_line and not has_buy_side
-    order_sell = break_low_line and has_buy_side
+    order_buy = break_high_line and not is_buy_side
+    order_sell = break_low_line and not is_sell_side
 
     if order_buy:
         save_entry(side="BUY", price=high_line)
-        has_buy_side = True
+        is_buy_side = True
+        is_sell_side = False
 
     if order_sell:
         save_entry(side="SELL", price=low_line)
-        has_buy_side = False
+        is_buy_side = False
+        is_sell_side = True
