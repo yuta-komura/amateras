@@ -57,19 +57,21 @@ def liquidate():
                 collateral = int(collateral)
                 break
 
-            class_name = "collateral__form"
-            elements = driver.find_elements_by_class_name(class_name)
-            withdraw_element = None
-            for e in elements:
-                if "現物口座へ" in e.text:
-                    withdraw_element = e
-
-            w_input = \
-                withdraw_element.find_element_by_tag_name("input")
-            w_button = \
-                withdraw_element.find_element_by_tag_name("button")
-
             while True:
+                driver.get("https://lightning.bitflyer.com/funds")
+
+                class_name = "collateral__form"
+                elements = driver.find_elements_by_class_name(class_name)
+                withdraw_element = None
+                for e in elements:
+                    if "現物口座へ" in e.text:
+                        withdraw_element = e
+
+                w_input = \
+                    withdraw_element.find_element_by_tag_name("input")
+                w_button = \
+                    withdraw_element.find_element_by_tag_name("button")
+
                 w_input.clear()
                 w_input.send_keys(collateral)
                 w_button.click()
@@ -90,7 +92,7 @@ def liquidate():
                 if is_success:
                     break
                 else:
-                    collateral -= 100
+                    collateral -= 1000
                     if collateral < 0:
                         message.error("collateral < 0")
 
