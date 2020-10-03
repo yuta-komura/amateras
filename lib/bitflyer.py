@@ -41,17 +41,22 @@ class API:
                 has_completed_order = size < 0.01 \
                     or self.__has_changed_side(side=side)
                 if has_completed_order:
+                    order_size = self.__get_order_size(
+                        price=price, position_size=0)
+                    order_size = float(math.round_down(order_size, -2))
+
                     sql = "select * from position"
-                    position = repository.read_sql(
-                        database=self.DATABASE, sql=sql)
+                    position = \
+                        repository.read_sql(database=self.DATABASE, sql=sql)
+
                     if position.empty:
-                        sql = "insert into position values('{side}')"\
-                            .format(side=side)
+                        sql = "insert into position values('{side}',{size})"\
+                            .format(side=side, size=order_size)
                         repository.execute(
                             database=self.DATABASE, sql=sql, write=False)
                     else:
-                        sql = "update position set side='{side}'"\
-                            .format(side=side)
+                        sql = "update position set side='{side}',size={size}"\
+                            .format(side=side, size=order_size)
                         repository.execute(
                             database=self.DATABASE, sql=sql, write=False)
                     message.info(side, "order complete")
@@ -95,6 +100,35 @@ class API:
 
                 self.__send_order(side=side, size=size, price=price)
                 time.sleep(1)
+            except Exception:
+                message.error(traceback.format_exc())
+                time.sleep(3)
+
+    def invalidate_position_close(self, order_side, order_size):
+        while True:
+            try:
+                time.sleep(120)
+
+                if self.__has_changed_side(side=order_side):
+                    return
+
+                position = self.__get_position()
+                position_size = position["size"]
+
+                if order_size * 1.5 <= position_size:
+                    message.warning("close invalidate position size")
+                    side = self.__reverse_side(side=order_side)
+                    size = position_size - order_size
+                    price = self.__get_order_price(side=side)
+
+                    assert self.is_valid_side(side=side)
+                    assert self.is_valid_size(size=size)
+                    assert self.is_valid_price(price=price)
+
+                    self.__send_order(side=side, size=size, price=price)
+                else:
+                    message.info("position is validate")
+                    return
             except Exception:
                 message.error(traceback.format_exc())
                 time.sleep(3)
