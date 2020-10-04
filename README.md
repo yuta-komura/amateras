@@ -54,7 +54,7 @@ venv同梱です。プログラム起動時に自動でvenvがアクティベー
 ```python:config.py
 class Bitflyer(Enum):
     class Api(Enum):
-        KEY = ""fcksdjcji9swefeixcJKj1"
+        KEY = "fcksdjcji9swefeixcJKj1"
         SECRET = "sdjkalsxc90wdwkksldfdscmcldsa"
 ```
 
