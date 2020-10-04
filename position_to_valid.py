@@ -22,5 +22,5 @@ while True:
 
     if not latest_side \
             or latest_side != side:
-        bitflyer.invalidate_position_close(order_side=side, order_size=size)
+        bitflyer.position_validation(order_side=side, order_size=size)
         latest_side = side

@@ -104,7 +104,7 @@ class API:
                 message.error(traceback.format_exc())
                 time.sleep(3)
 
-    def invalidate_position_close(self, order_side, order_size):
+    def position_validation(self, order_side, order_size):
         while True:
             try:
                 time.sleep(120)
@@ -116,39 +116,30 @@ class API:
                 position_side = position["side"]
                 position_size = position["size"]
 
-                is_invalidate_position = \
-                    self.__is_invalidate_position(
-                        position_side=position_side,
-                        position_size=position_size,
-                        order_side=order_side,
-                        order_size=order_size)
-
-                if is_invalidate_position:
+                if position_side is None \
+                        or order_side != position_side:
                     message.warning("invalidate position")
                     self.order(order_side)
+                elif order_size * 0.5 >= position_size:
+                    message.warning("not enough position size")
+                    self.order(order_side)
+                elif order_size * 1.5 <= position_size:
+                    message.warning("close invalidate position size")
+                    side = self.__reverse_side(side=order_side)
+                    size = position_size - order_size
+                    price = self.__get_order_price(side=side)
+
+                    assert self.is_valid_side(side=side)
+                    assert self.is_valid_size(size=size)
+                    assert self.is_valid_price(price=price)
+
+                    self.__send_order(side=side, size=size, price=price)
                 else:
                     message.info("position is validate")
                     return
             except Exception:
                 message.error(traceback.format_exc())
                 time.sleep(3)
-
-    @staticmethod
-    def __is_invalidate_position(
-            position_side,
-            position_size,
-            order_side,
-            order_size):
-            
-        if position_side is None \
-                or order_side != position_side:
-            return True
-        elif order_size * 1.5 <= position_size:
-            return True
-        elif order_size * 0.5 >= position_size:
-            return True
-        else:
-            return False
 
     def __reverse_side(self, side):
         if side == "BUY":
