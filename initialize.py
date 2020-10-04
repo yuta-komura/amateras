@@ -1,6 +1,6 @@
 import pybitflyer
 
-from lib import repository, stdout
+from lib import repository, stdout, message
 from lib.config import Bitflyer
 from lib.exception import ConfigException
 
@@ -25,14 +25,15 @@ def truncate_table():
     repository.execute(database=DATABASE, sql=sql)
 
 
-def execute():
-    config_test()
+if __name__ == "__main__":
+    DATABASE = "tradingbot"
+
     stdout.amateras()
     print("tradingbot AMATERAS start !!")
 
+    message.info("initialize start")
+
+    config_test()
     truncate_table()
 
-
-if __name__ == "__main__":
-    DATABASE = "tradingbot"
-    execute()
+    message.info("initialize complete")
