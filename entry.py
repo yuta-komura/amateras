@@ -12,6 +12,8 @@ def get_historical_price() -> pd.DataFrame or None:
     try:
         limit = CHANNEL_BAR_NUM + 1
         historical_price = bitflyer.get_historical_price(limit=limit)
+        if len(historical_price) != limit:
+            return None
         return historical_price
     except Exception:
         message.error(traceback.format_exc())
