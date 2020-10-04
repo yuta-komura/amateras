@@ -113,25 +113,42 @@ class API:
                     return
 
                 position = self.__get_position()
+                position_side = position["side"]
                 position_size = position["size"]
 
-                if order_size * 1.5 <= position_size:
-                    message.warning("close invalidate position size")
-                    side = self.__reverse_side(side=order_side)
-                    size = position_size - order_size
-                    price = self.__get_order_price(side=side)
+                is_invalidate_position = \
+                    self.__is_invalidate_position(
+                        position_side=position_side,
+                        position_size=position_size,
+                        order_side=order_side,
+                        order_size=order_size)
 
-                    assert self.is_valid_side(side=side)
-                    assert self.is_valid_size(size=size)
-                    assert self.is_valid_price(price=price)
-
-                    self.__send_order(side=side, size=size, price=price)
+                if is_invalidate_position:
+                    message.warning("invalidate position")
+                    self.order(order_side)
                 else:
                     message.info("position is validate")
                     return
             except Exception:
                 message.error(traceback.format_exc())
                 time.sleep(3)
+
+    @staticmethod
+    def __is_invalidate_position(
+            position_side,
+            position_size,
+            order_side,
+            order_size):
+            
+        if position_side is None \
+                or order_side != position_side:
+            return True
+        elif order_size * 1.5 <= position_size:
+            return True
+        elif order_size * 0.5 >= position_size:
+            return True
+        else:
+            return False
 
     def __reverse_side(self, side):
         if side == "BUY":
