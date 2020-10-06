@@ -47,3 +47,5 @@ insert into
     ticker
 values
     (now(), 0, 0);
+
+commit;
