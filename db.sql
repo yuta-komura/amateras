@@ -8,12 +8,12 @@ CREATE TABLE `entry` (
     `side` varchar(255) NOT NULL,
     `price` int unsigned NOT NULL,
     PRIMARY KEY (`process_id`)
-);
+) ENGINE = MEMORY;
 
 CREATE TABLE `position` (
     `side` varchar(255) NOT NULL,
     `size` float NOT NULL
-);
+) ENGINE = MEMORY;
 
 CREATE TABLE `child_order` (
     `id` int NOT NULL AUTO_INCREMENT,
@@ -25,7 +25,7 @@ CREATE TABLE `child_order` (
     `child_order_type` varchar(255) DEFAULT NULL,
     `product_code` varchar(255) NOT NULL,
     PRIMARY KEY (`id`)
-);
+) ENGINE = MEMORY;
 
 CREATE TABLE `execution_history` (
     `id` bigint unsigned NOT NULL AUTO_INCREMENT,
@@ -35,13 +35,13 @@ CREATE TABLE `execution_history` (
     `size` float unsigned NOT NULL,
     PRIMARY KEY (`id`),
     KEY `index_execution_history_1` (`date`)
-);
+) ENGINE = MEMORY;
 
 CREATE TABLE `ticker` (
     `date` timestamp NOT NULL,
     `best_bid` int unsigned NOT NULL,
     `best_ask` int unsigned NOT NULL
-);
+) ENGINE = MEMORY;
 
 insert into
     ticker
