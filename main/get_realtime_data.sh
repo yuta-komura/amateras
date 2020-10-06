@@ -8,6 +8,6 @@ SCRIPT_DIR=$(
 
 . ${SCRIPT_DIR}/venv/bin/activate
 
-python ${SCRIPT_DIR}/get_realtime_date.py
+python ${SCRIPT_DIR}/get_realtime_data.py
 
 wait
