@@ -6,7 +6,7 @@ bitflyer-lightning（btcfxjpy）用のビットコイン自動売買botです。
 投資は自己責任でお願いします。　　
 
 ---
-[ライセンス](https://github.com/yuta-komura/amateras/blob/master/LICENSE.txt)
+[ライセンス](https://github.com/yuta-komura/amateras/blob/master/LICENSE)
 
 ---    
 ### パフォーマンス
