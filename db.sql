@@ -19,13 +19,7 @@ CREATE TABLE `backtest_entry` (
     `size` float unsigned NOT NULL
 );
 
-CREATE TABLE `entry` (
-    `process_id` int NOT NULL AUTO_INCREMENT,
-    `date` timestamp(6) NOT NULL,
-    `side` varchar(255) NOT NULL,
-    `price` int unsigned NOT NULL,
-    PRIMARY KEY (`process_id`)
-);
+CREATE TABLE `entry` (`side` varchar(255) NOT NULL);
 
 CREATE TABLE `execution_history` (
     `id` bigint unsigned NOT NULL AUTO_INCREMENT,
