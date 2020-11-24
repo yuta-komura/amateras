@@ -64,7 +64,7 @@ class Bitflyer(Enum):
 
 **レバレッジ**：  
 bitflyerでは4倍を設定してください。  
-このシステムは、レバレッジ2倍分のポジションサイズをとります。  
+このシステムは、レバレッジ1倍分のポジションサイズをとります。  
 ポジションサイズの変更は**lib/bitflyer.py**のコンストラクタで設定してください。  
 ```python:bitflyer.py
     def __init__(self, api_key, api_secret):
