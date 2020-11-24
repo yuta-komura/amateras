@@ -12,6 +12,5 @@ python ${SCRIPT_DIR}/initialize.py
 
 python ${SCRIPT_DIR}/entry.py &
 python ${SCRIPT_DIR}/entry_to_position.py &
-python ${SCRIPT_DIR}/position_to_valid.py &
 
 wait

@@ -1,40 +1,25 @@
-import sys
-import time
-import traceback
-
 import pandas as pd
 
 from lib import repository
+from lib.config import HistoricalPrice
 
 
 def get_historical_price() -> pd.DataFrame or None:
-    try:
-        i_from = backtest_no - 1
-        i_to = i_from + CHANNEL_BAR_NUM + 1
-        if i_to >= len(bitflyer_btc_ohlc):
-            print("backtest finish")
-            sys.exit()
-        historical_price = \
-            bitflyer_btc_ohlc[i_from:i_to].reset_index(drop=True)
-        assert len(historical_price) == CHANNEL_BAR_NUM + 1, \
-            "not len(historical_price) == CHANNEL_BAR_NUM + 1"
-        return historical_price
-    except Exception:
-        print(traceback.format_exc())
-        time.sleep(10)
-        return None
+    i_from = backtest_no - 1
+    i_to = i_from + CHANNEL_BAR_NUM + 1
+    historical_price = \
+        bo[i_from:i_to].reset_index(drop=True)
+    return historical_price
 
 
 def save_entry(date, side, price):
-    side = str(side)
-    price = int(price)
     sql = "insert into backtest_entry values('{date}','{side}',{price},0)" \
         .format(date=date, side=side, price=price)
     repository.execute(database=DATABASE, sql=sql, log=False)
 
 
-TIME_FRAME = 1  # minutes
-CHANNEL_WIDTH = 1
+TIME_FRAME = HistoricalPrice.TIME_FRAME.value
+CHANNEL_WIDTH = HistoricalPrice.CHANNEL_WIDTH.value
 CHANNEL_BAR_NUM = TIME_FRAME * CHANNEL_WIDTH
 
 print("TIME_FRAME", TIME_FRAME)
@@ -46,31 +31,29 @@ sql = """
         select
             *
         from
-            bitflyer_btc_ohlc_1S
+            bitflyer_btc_ohlc_1M
         order by
             Date
     """
-bitflyer_btc_ohlc = repository.read_sql(database=DATABASE, sql=sql)
-
-print(bitflyer_btc_ohlc)
+bo = repository.read_sql(database=DATABASE, sql=sql)
 
 sql = "truncate backtest_entry"
 repository.execute(database=DATABASE, sql=sql, log=False)
 
 backtest_no = 1
-has_buy_side = False
-has_sell_side = False
+has_buy = False
+has_sell = False
 while True:
-    historical_price = get_historical_price()
-    if historical_price is None:
+    hp = get_historical_price()
+    if hp is None:
         continue
 
-    channel = historical_price[:-1]
+    channel = hp[:-1]
     high_line = channel["High"].max()
     low_line = channel["Low"].min()
 
-    i = len(historical_price) - 1
-    latest = historical_price.iloc[i]
+    i = len(hp) - 1
+    latest = hp.iloc[i]
     Date = latest["Date"]
 
     High = latest["High"]
@@ -88,21 +71,23 @@ while True:
                              |  <- break
     """
     invalid_trading = break_high_line and break_low_line
+
     if invalid_trading:
-        save_entry(date=Date, side="CLOSE", price=Close)
         print("invalid trading")
+        save_entry(date=Date, side="CLOSE", price=Close)
+        continue
     else:
-        order_buy = break_high_line and not has_buy_side
-        order_sell = break_low_line and not has_sell_side
+        entry_buy = break_high_line and not has_buy
+        entry_sell = break_low_line and not has_sell
 
-        if order_buy:
+        if entry_buy:
             save_entry(date=Date, side="BUY", price=high_line)
-            has_buy_side = True
-            has_sell_side = False
+            has_buy = True
+            has_sell = False
 
-        if order_sell:
+        if entry_sell:
             save_entry(date=Date, side="SELL", price=low_line)
-            has_buy_side = False
-            has_sell_side = True
+            has_buy = False
+            has_sell = True
 
     backtest_no += 1

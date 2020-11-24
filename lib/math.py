@@ -6,5 +6,5 @@ def round_down(num, digits: int):
     else:
         b = 10 ** int(digits)
         answer = int(a / b) * b
-    assert not(num != 0 and answer == 0)
+    assert not(not(-0.01 < num < 0.01) and answer == 0)
     return answer
