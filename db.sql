@@ -26,7 +26,7 @@ CREATE TABLE `execution_history` (
     `date` datetime(6) NOT NULL,
     `side` varchar(255) NOT NULL,
     `price` int unsigned NOT NULL,
-    `size` float unsigned NOT NULL,
+    `size` decimal(65, 30) unsigned NOT NULL,
     PRIMARY KEY (`id`),
     KEY `index_execution_history_1` (`date`)
 );
