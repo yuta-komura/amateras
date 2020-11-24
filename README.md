@@ -70,7 +70,7 @@ bitflyerでは4倍を設定してください。
     def __init__(self, api_key, api_secret):
         self.api = pybitflyer.API(api_key=api_key, api_secret=api_secret)
         self.PRODUCT_CODE = "FX_BTC_JPY"
-        self.LEVERAGE = 2
+        self.LEVERAGE = 1
         self.DATABASE = "tradingbot"
 ```
 ---  
