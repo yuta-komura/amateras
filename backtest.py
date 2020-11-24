@@ -1,3 +1,5 @@
+import sys
+
 import pandas as pd
 
 from lib import repository
@@ -7,6 +9,11 @@ from lib.config import HistoricalPrice
 def get_historical_price() -> pd.DataFrame or None:
     i_from = backtest_no - 1
     i_to = i_from + CHANNEL_BAR_NUM + 1
+
+    if i_to > len(bo):
+        print("complete")
+        sys.exit()
+
     historical_price = \
         bo[i_from:i_to].reset_index(drop=True)
     return historical_price
