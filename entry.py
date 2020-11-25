@@ -76,7 +76,6 @@ while True:
             time.sleep(1)
 
         message.info("invalid trading")
-        save_entry(side="CLOSE")
         continue
     else:
         entry_buy = break_high_line and not has_buy
