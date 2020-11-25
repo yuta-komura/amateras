@@ -82,6 +82,7 @@ while True:
     if invalid_trading:
         print("invalid trading")
         save_entry(date=Date, side="CLOSE", price=Close)
+        backtest_no += 1
         continue
     else:
         entry_buy = break_high_line and not has_buy
