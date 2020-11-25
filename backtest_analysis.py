@@ -1,3 +1,5 @@
+import statistics
+
 import matplotlib.pyplot as plt
 
 from lib import math, repository
@@ -18,6 +20,7 @@ start_time = be.loc[0]["date"]
 finish_time = be.loc[len(be) - 1]["date"]
 
 profits = []
+elapsed_secs = []
 for i in range(len(be)):
     if i == 0:
         continue
@@ -31,6 +34,11 @@ for i in range(len(be)):
         amount = asset / entry_position["price"]
         profit = (amount * close_position["price"]) - asset
 
+        elapsed_sec = (
+            close_position["date"] -
+            entry_position["date"]).seconds
+        elapsed_secs.append(elapsed_sec)
+
         profits.append(profit)
         asset += profit
 
@@ -39,6 +47,11 @@ for i in range(len(be)):
 
         amount = asset / entry_position["price"]
         profit = asset - (amount * close_position["price"])
+
+        elapsed_sec = (
+            close_position["date"] -
+            entry_position["date"]).seconds
+        elapsed_secs.append(elapsed_sec)
 
         profits.append(profit)
         asset += profit
@@ -67,6 +80,10 @@ if pf:
     print("pf", math.round_down(pf, -2))
 if wp:
     print("wp", math.round_down(wp, 0), "%")
+if elapsed_secs:
+    median_elapsed_sec = statistics.median(elapsed_secs)
+    print("median elapsed_sec", math.round_down(median_elapsed_sec, 0))
+
 print("trading cnt", len(profits))
 
 ps = []
